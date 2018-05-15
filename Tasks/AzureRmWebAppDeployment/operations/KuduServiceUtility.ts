@@ -10,6 +10,7 @@ var zipUtility = require('webdeployment-common/ziputility.js');
 const physicalRootPath: string = '/site/wwwroot';
 const deploymentFolder: string = 'site/deployments';
 const manifestFileName: string = 'manifest';
+const siteversionFileName: string = 'siteversion.txt';
 const VSTS_ZIP_DEPLOY: string = 'VSTS_ZIP_DEPLOY';
 
 export class KuduServiceUtility {
@@ -175,6 +176,36 @@ export class KuduServiceUtility {
 
             console.log(tl.loc('PackageDeploymentSuccess'));
             return deploymentDetails.id;
+        }
+        catch(error) {
+            tl.error(tl.loc('PackageDeploymentFailed'));
+            throw Error(error);
+        }
+    }
+
+    public async preRunFromZip(packagePath: string, appOffline?: boolean, customMessage?: any): Promise<void> {
+        try {
+            console.log(tl.loc('PackageDeploymentInitiated'));
+
+            if(tl.stats(packagePath).isDirectory()) {
+                let tempPackagePath = deployUtility.generateTemporaryFolderOrZipPath(tl.getVariable('AGENT.TEMPDIRECTORY'), false);
+                packagePath = await zipUtility.archiveFolder(packagePath, "", tempPackagePath);
+                tl.debug("Compressed folder " + packagePath + " into zip : " +  packagePath);
+            }
+
+            if(appOffline) {
+                await this._appOfflineKuduService(physicalRootPath, true);
+                tl.debug('Wait for 10 seconds for app_offline to take effect');
+                await webClient.sleepFor(10);
+            }
+
+            var webPackageName = packagePath.split('\\').pop().split('/').pop();
+            
+            await this._appServiceKuduService.uploadFile('d:/home/data/SitePackages',webPackageName,packagePath);
+
+            var tempSiteVersionFile: string = path.join(tl.getVariable('AGENT.TEMPDIRECTORY'), siteversionFileName);
+            tl.writeFile(tempSiteVersionFile, webPackageName);
+            await this._appServiceKuduService.uploadFile('d:/home/data/SitePackages', siteversionFileName, tempSiteVersionFile);
         }
         catch(error) {
             tl.error(tl.loc('PackageDeploymentFailed'));

@@ -2,6 +2,7 @@ import { TaskParameters } from '../operations/TaskParameters';
 import * as Constant from '../operations/Constants'
 import { PublishProfileWebAppDeploymentProvider } from './PublishProfileWebAppDeploymentProvider';
 import { BuiltInLinuxWebAppDeploymentProvider } from './BuiltInLinuxWebAppDeploymentProvider';
+import { RunFromZipWebAppDeploymentProvider } from './RunFromZipWebAppDeploymentProvider';
 import { IWebAppDeploymentProvider } from './IWebAppDeploymentProvider';
 import { WindowsWebAppDeploymentProvider } from './WindowsWebAppDeploymentProvider';
 import { ContainerWebAppDeploymentProvider } from './ContainerWebAppDeploymentProvider';
@@ -21,9 +22,11 @@ export class DeploymentFactory{
                     } else {
                         throw new Error(tl.loc('InvalidImageSourceType'));
                     }
-                } else {
-                    return new WindowsWebAppDeploymentProvider(taskParams);
-                }
+                } else //if(taskParams.ScriptType) {
+                    return new BuiltInLinuxWebAppDeploymentProvider(taskParams);
+               // } else{
+                 //   return new RunFromZipWebAppDeploymentProvider(taskParams);
+               // }
             default:
                 throw new Error(tl.loc('InvalidConnectionType'));
         }
