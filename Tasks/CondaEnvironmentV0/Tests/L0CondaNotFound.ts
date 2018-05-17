@@ -10,15 +10,16 @@ const taskRunner = new TaskMockRunner(taskPath);
 taskRunner.setInput('environmentName', 'test');
 
 // Mock vsts-task-lib
-taskRunner.setAnswers({
-    which: {
-    }
-});
+// taskRunner.setAnswers({
+//     which: {
+//     }
+// });
 
 const getVariable = sinon.stub();
 getVariable.withArgs('CONDA').returns(undefined);
 
 taskRunner.registerMock('vsts-task-lib/task', {
+    which: () => undefined,
     // `getVariable` is not supported by `TaskLibAnswers`
     getVariable: getVariable
 });
