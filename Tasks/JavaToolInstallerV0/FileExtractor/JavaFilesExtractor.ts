@@ -67,7 +67,7 @@ export class JavaFilesExtractor {
         console.log(taskLib.loc('TarExtractFile', file));
         const tr: tr.ToolRunner = taskLib.tool('tar');
         tr.arg(['xzC', destinationFolder, '-f', file]);
-        tr.exec();
+        await tr.exec();
     }
 
     private extractFiles(file: string, fileEnding: string) {
